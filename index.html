@@ -376,7 +376,7 @@
             
             <div class="schema-grid">
                 <div class="table-card">
-                    <span class="table-name">transactions</span>
+                    <span class="table-name">transactions (The "What")</span>
                     <ul class="column-list">
                         <li>txn_id (UUID, PK)</li>
                         <li>sender_id (INT, FK)</li>
@@ -384,23 +384,25 @@
                         <li>amount (DECIMAL)</li>
                         <li>source_currency (CHAR 3)</li>
                         <li>target_currency (CHAR 3)</li>
-                        <li>status (ENUM: 'SUCCESS', 'FAILED', 'PENDING')</li>
+                        <li>status (ENUM)</li>
                         <li>created_at (TIMESTAMP)</li>
                     </ul>
+                    <p style="font-size: 0.8rem; margin-top: 10px; color: #8b949e;">Stores core payment data. The <strong>status</strong> and <strong>created_at</strong> are your primary filters for troubleshooting.</p>
                 </div>
 
                 <div class="table-card">
-                    <span class="table-name">users</span>
+                    <span class="table-name">users (The "Who")</span>
                     <ul class="column-list">
                         <li>user_id (INT, PK)</li>
                         <li>country_code (CHAR 2)</li>
-                        <li>kyc_status (ENUM: 'VERIFIED', 'UNVERIFIED')</li>
+                        <li>kyc_status (ENUM)</li>
                         <li>joined_date (DATE)</li>
                     </ul>
+                    <p style="font-size: 0.8rem; margin-top: 10px; color: #8b949e;">Master data for platform members. Use <strong>country_code</strong> to investigate regional outages.</p>
                 </div>
 
                 <div class="table-card">
-                    <span class="table-name">system_logs</span>
+                    <span class="table-name">system_logs (The "Technical Why")</span>
                     <ul class="column-list">
                         <li>log_id (BIGINT, PK)</li>
                         <li>service_name (VARCHAR)</li>
@@ -408,6 +410,38 @@
                         <li>response_time_ms (INT)</li>
                         <li>timestamp (TIMESTAMP)</li>
                     </ul>
+                    <p style="font-size: 0.8rem; margin-top: 10px; color: #8b949e;">Infrastructure health data. Use <strong>response_time_ms</strong> to find "lag" and <strong>error_code</strong> to see why a txn failed.</p>
+                </div>
+            </div>
+
+            <div class="table-card" style="margin-top: 30px; border-top: 2px solid var(--accent-color);">
+                <h2 style="font-size: 1.1rem; margin-bottom: 15px;">Technical Abbreviation Guide</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.85rem;">
+                    <div>
+                        <p><strong>Keys & Relationships:</strong></p>
+                        <ul style="padding-left: 20px; line-height: 1.6;">
+                            <li><strong>PK (Primary Key):</strong> The unique "fingerprint" for a row.</li>
+                            <li><strong>FK (Foreign Key):</strong> A link pointing to a PK in another table.</li>
+                        </ul>
+                        <p><strong>Data Types:</strong></p>
+                        <ul style="padding-left: 20px; line-height: 1.6;">
+                            <li><strong>INT / BIGINT:</strong> Whole numbers.</li>
+                            <li><strong>DECIMAL:</strong> Precise numbers for money/amounts.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p><strong>String & List Types:</strong></p>
+                        <ul style="padding-left: 20px; line-height: 1.6;">
+                            <li><strong>CHAR / VARCHAR:</strong> Text strings (fixed vs. variable length).</li>
+                            <li><strong>UUID:</strong> A complex, globally unique random string.</li>
+                            <li><strong>ENUM:</strong> A pre-defined list of allowed words.</li>
+                        </ul>
+                        <p><strong>Time Types:</strong></p>
+                        <ul style="padding-left: 20px; line-height: 1.6;">
+                            <li><strong>TIMESTAMP:</strong> Exact Date and Time.</li>
+                            <li><strong>DATE:</strong> Date only (Year-Month-Day).</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </section>
