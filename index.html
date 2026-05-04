@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The SQL Foundation Lab</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --sidebar-bg: #161b22;
+            --text-color: #c9d1d9;
+            --accent-color: #58a6ff;
+            --success-color: #2ea043;
+            --error-color: #f85149;
+            --border-color: #30363d;
+            --code-bg: #010409;
+            --terminal-header: #21262d;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--accent-color);
+        }
+
+        nav {
+            flex: 1;
+            padding: 10px 0;
+        }
+
+        nav button {
+            width: 100%;
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        nav button:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        nav button.active {
+            background-color: rgba(88, 166, 255, 0.1);
+            border-left: 3px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .content-section {
+            display: none;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        h1, h2 {
+            color: var(--accent-color);
+        }
+
+        p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        /* Schema Display */
+        .schema-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .table-card {
+            background-color: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+        }
+
+        .table-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            color: #d2a8ff;
+        }
+
+        .column-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.85rem;
+        }
+
+        .column-list li {
+            padding: 4px 0;
+        }
+
+        /* Terminal Component */
+        .terminal {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background-color: var(--terminal-header);
+            padding: 8px 15px;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-body {
+            padding: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            background: none;
+            border: none;
+            color: #d1d5db;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.95rem;
+            resize: vertical;
+            outline: none;
+        }
+
+        .controls {
+            padding: 10px 20px;
+            background-color: var(--terminal-header);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        button.primary {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button.primary:hover {
+            opacity: 0.9;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .feedback.success {
+            background-color: rgba(46, 160, 67, 0.15);
+            border: 1px solid var(--success-color);
+            display: block;
+        }
+
+        .feedback.info {
+            background-color: rgba(88, 166, 255, 0.15);
+            border: 1px solid var(--accent-color);
+            display: block;
+        }
+
+        pre {
+            background-color: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            color: #79c0ff;
+        }
+
+        /* Quiz Styles */
+        .quiz-option {
+            background-color: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--accent-color);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.1);
+        }
+
+        /* Flashcard */
+        .card-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            background-color: var(--sidebar-bg);
+            padding: 40px;
+            text-align: center;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background-color: var(--terminal-header);
+        }
+
+        .flashcard-nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        code {
+            color: #ff7b72;
+            background-color: rgba(110, 118, 129, 0.4);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        /* Exam Workspace Layout */
+        .exam-workspace {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 200px);
+            margin-top: 20px;
+        }
+
+        .exam-terminal-area {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .exam-schema-area {
+            flex: 1;
+            background-color: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+
+        .question-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: var(--terminal-header);
+            border-radius: 6px;
+        }
+
+        .mini-table {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mini-table-name {
+            color: #d2a8ff;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .mini-column {
+            display: block;
+            color: #8b949e;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="sidebar-header">The SQL Foundation Lab</div>
+        <nav>
+            <button onclick="showSection('overview')" id="btn-overview">Database Schema</button>
+            <button onclick="showSection('module-0')" class="active" id="btn-module-0">0: SQL Basics</button>
+            <button onclick="showSection('module-1')" id="btn-module-1">1: Data Filtering</button>
+            <button onclick="showSection('module-2')" id="btn-module-2">2: Aggregation</button>
+            <button onclick="showSection('module-3')" id="btn-module-3">3: Relationships (Joins)</button>
+            <button onclick="showSection('module-4')" id="btn-module-4">4: Organizational Tools</button>
+            <button onclick="showSection('module-a')" id="btn-module-a">A: Troubleshooting</button>
+            <button onclick="showSection('module-b')" id="btn-module-b">B: Optimization</button>
+            <button onclick="showSection('module-c')" id="btn-module-c">C: CLI Intercept</button>
+            <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                <button onclick="showSection('exams')" id="btn-exams" style="color: #f2e05a;">Practice Exam Center</button>
+                <button onclick="showSection('answers')" id="btn-answers" style="color: #aff5b4;">Answer Key & Study Guide</button>
+            </div>
+        </nav>
+    </aside>
+
+    <main>
+        <!-- Section: Overview / Schema -->
+        <section id="overview" class="content-section">
+            <h1>Payment Ecosystem Schema</h1>
+            <p>Welcome, Engineer. Below is the reference schema for our cross-border payment system. Familiarize yourself with these tables as they are the backbone of your troubleshooting tasks.</p>
+            
+            <div class="schema-grid">
+                <div class="table-card">
+                    <span class="table-name">transactions</span>
+                    <ul class="column-list">
+                        <li>txn_id (UUID, PK)</li>
+                        <li>sender_id (INT, FK)</li>
+                        <li>receiver_id (INT, FK)</li>
+                        <li>amount (DECIMAL)</li>
+                        <li>source_currency (CHAR 3)</li>
+                        <li>target_currency (CHAR 3)</li>
+                        <li>status (ENUM: 'SUCCESS', 'FAILED', 'PENDING')</li>
+                        <li>created_at (TIMESTAMP)</li>
+                    </ul>
+                </div>
+
+                <div class="table-card">
+                    <span class="table-name">users</span>
+                    <ul class="column-list">
+                        <li>user_id (INT, PK)</li>
+                        <li>country_code (CHAR 2)</li>
+                        <li>kyc_status (ENUM: 'VERIFIED', 'UNVERIFIED')</li>
+                        <li>joined_date (DATE)</li>
+                    </ul>
+                </div>
+
+                <div class="table-card">
+                    <span class="table-name">system_logs</span>
+                    <ul class="column-list">
+                        <li>log_id (BIGINT, PK)</li>
+                        <li>service_name (VARCHAR)</li>
+                        <li>error_code (VARCHAR)</li>
+                        <li>response_time_ms (INT)</li>
+                        <li>timestamp (TIMESTAMP)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Module 0 -->
+        <section id="module-0" class="content-section active">
+            <h1>Module 0: SQL Basics for Beginners</h1>
+            <p>Welcome! If you're new to databases, start here. SQL (Structured Query Language) is the standard language for interacting with relational databases.</p>
+            
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">1. The SELECT Statement</h2>
+                <p>Think of <code>SELECT</code> as asking the database for specific columns of information.</p>
+                <pre>SELECT first_name, last_name FROM users;</pre>
+                <p>If you want <em>everything</em> from a table, use the asterisk <code>*</code>:</p>
+                <pre>SELECT * FROM transactions;</pre>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">2. The WHERE Clause</h2>
+                <p>Use <code>WHERE</code> to filter your results. It's like a search filter on a website.</p>
+                <pre>SELECT * FROM users WHERE country_code = 'TH';</pre>
+                <p>You can also use operators like <code>></code>, <code><</code>, or <code>!=</code> (not equal).</p>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">3. Combining them</h2>
+                <p>A basic query usually follows this structure:</p>
+                <div class="terminal" style="margin: 10px 0;">
+                    <div class="terminal-body" style="padding: 15px;">
+                        <code style="display: block; margin-bottom: 5px;">SELECT [columns]</code>
+                        <code style="display: block; margin-bottom: 5px;">FROM [table]</code>
+                        <code style="display: block;">WHERE [conditions];</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feedback info" style="display: block;">
+                <strong>Practice Tip:</strong> Try to read the SQL out loud like a sentence. "Select all columns from the transactions table where the status is 'FAILED'."
+            </div>
+        </section>
+
+        <!-- Section: Module 1 -->
+        <section id="module-1" class="content-section">
+            <h1>Module 1: Data Filtering</h1>
+            <p>Go beyond simple filters. Learn how to narrow down results using ranges, patterns, and multiple conditions.</p>
+            
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Ranges with BETWEEN</h2>
+                <p>Find values within a specific range (inclusive).</p>
+                <pre>SELECT * FROM transactions 
+WHERE amount BETWEEN 100 AND 500;</pre>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Patterns with LIKE</h2>
+                <p>Use <code>%</code> as a wildcard to match parts of a string.</p>
+                <pre>SELECT * FROM system_logs 
+WHERE service_name LIKE 'payment%'; -- Matches anything starting with 'payment'</pre>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Multiple Options with IN</h2>
+                <p>Filter for a list of specific values.</p>
+                <pre>SELECT * FROM transactions 
+WHERE source_currency IN ('THB', 'USD', 'SGD');</pre>
+            </div>
+        </section>
+
+        <!-- Section: Module 2 -->
+        <section id="module-2" class="content-section">
+            <h1>Module 2: Aggregation</h1>
+            <p>Instead of looking at individual rows, summarize data into useful totals, counts, and averages.</p>
+            
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Counting and Summing</h2>
+                <p><code>COUNT(*)</code> counts rows, <code>SUM()</code> adds up numeric values.</p>
+                <pre>SELECT COUNT(*) FROM transactions WHERE status = 'FAILED';
+SELECT SUM(amount) FROM transactions WHERE status = 'SUCCESS';</pre>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">GROUP BY</h2>
+                <p>Break down totals by a specific category (e.g., status or country).</p>
+                <pre>SELECT status, COUNT(*) 
+FROM transactions 
+GROUP BY status;</pre>
+            </div>
+
+            <div class="feedback info" style="display: block;">
+                <strong>Pro Tip:</strong> When using <code>GROUP BY</code>, every column in your <code>SELECT</code> must either be in the <code>GROUP BY</code> clause or be wrapped in an aggregate function like <code>COUNT</code>.
+            </div>
+        </section>
+
+        <!-- Section: Module 3 -->
+        <section id="module-3" class="content-section">
+            <h1>Module 3: Relationships (Joins)</h1>
+            <p>Databases are "relational" because tables are linked together. Use <code>JOIN</code> to combine data from different sources.</p>
+            
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">INNER JOIN</h2>
+                <p>The most common join. Returns rows only when there is a match in <strong>both</strong> tables.</p>
+                <pre>SELECT t.txn_id, u.country_code 
+FROM transactions t
+JOIN users u ON t.sender_id = u.user_id;</pre>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Understanding "ON"</h2>
+                <p>The <code>ON</code> keyword defines the "bridge" between tables—usually a Primary Key (PK) in one table and a Foreign Key (FK) in another.</p>
+            </div>
+        </section>
+
+        <!-- Section: Module 4 -->
+        <section id="module-4" class="content-section">
+            <h1>Module 4: Organizational Tools</h1>
+            <p>Clean up your results and make them readable for reports or dashboards.</p>
+            
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Ordering with ORDER BY</h2>
+                <p>Sort results by one or more columns (<code>ASC</code> for ascending, <code>DESC</code> for descending).</p>
+                <pre>SELECT * FROM transactions 
+ORDER BY created_at DESC;</pre>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Limiting with LIMIT</h2>
+                <p>Only return the top X results. Great for "recent transactions" lists.</p>
+                <pre>SELECT * FROM system_logs 
+ORDER BY timestamp DESC 
+LIMIT 10;</pre>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Aliases with AS</h2>
+                <p>Rename columns or tables to make them shorter or clearer.</p>
+                <pre>SELECT amount AS payment_value, source_currency AS from_cur 
+FROM transactions;</pre>
+            </div>
+        </section>
+
+        <!-- Section: Module A -->
+        <section id="module-a" class="content-section">
+            <h1>Module A: Day-to-Day Troubleshooting</h1>
+            <p><strong>Scenario:</strong> Customer support escalates a wave of failed transactions. We need to identify specific failures from Thai users to see if there's a regional service outage.</p>
+            <p><strong>Task:</strong> Write a query to find all <code>'FAILED'</code> transactions originating from Thailand (<code>'TH'</code>) within the last 24 hours. Include the user's <code>kyc_status</code> in the result.</p>
+            
+            <div class="terminal">
+                <div class="terminal-header">
+                    <span>mysql_query_editor.sql</span>
+                    <span>UTF-8</span>
+                </div>
+                <div class="terminal-body">
+                    <textarea id="sql-input" placeholder="SELECT ... FROM ... JOIN ... WHERE ..."></textarea>
+                </div>
+                <div class="controls">
+                    <button class="primary" onclick="checkSql()">Run Query</button>
+                </div>
+            </div>
+
+            <div id="feedback-a" class="feedback"></div>
+        </section>
+
+        <!-- Section: Module B -->
+        <section id="module-b" class="content-section">
+            <h1>Module B: Optimization & Indexing</h1>
+            <p><strong>Scenario:</strong> The internal dashboard is timing out. Our monitoring shows a full table scan on the <code>transactions</code> table for a common monitoring query.</p>
+            <p><strong>Target Query:</strong></p>
+            <pre>SELECT * FROM transactions 
+WHERE status = 'PENDING' 
+AND created_at > '2023-01-01';</pre>
+            
+            <p><strong>Task:</strong> Which indexing strategy would best optimize this query to prevent a full table scan?</p>
+            
+            <div id="quiz-options">
+                <div class="quiz-option" onclick="selectOption(this, 0)">
+                    <strong>A.</strong> Index only on <code>status</code>
+                </div>
+                <div class="quiz-option" onclick="selectOption(this, 1)">
+                    <strong>B.</strong> Index only on <code>created_at</code>
+                </div>
+                <div class="quiz-option" onclick="selectOption(this, 2)">
+                    <strong>C.</strong> Composite Index on <code>(status, created_at)</code>
+                </div>
+                <div class="quiz-option" onclick="selectOption(this, 3)">
+                    <strong>D.</strong> Unique Index on <code>txn_id</code>
+                </div>
+            </div>
+
+            <div class="controls" style="background: none; padding: 20px 0;">
+                <button class="primary" onclick="checkQuiz()">Submit Answer</button>
+            </div>
+
+            <div id="feedback-b" class="feedback"></div>
+        </section>
+
+        <!-- Section: Module C -->
+        <section id="module-c" class="content-section">
+            <h1>Module C: Linux & DB Intercept</h1>
+            <p><strong>Scenario:</strong> A slow query is dragging down the MySQL process. You need to identify it quickly using both system-level and database-level tools.</p>
+            
+            <div class="card-container">
+                <div id="flashcard" class="card" onclick="this.classList.toggle('flipped')">
+                    <div class="card-face">
+                        <h3>Task 1: System Identification</h3>
+                        <p>Which Linux command shows real-time resource usage by the <code>mysqld</code> process?</p>
+                        <small>(Click to flip)</small>
+                    </div>
+                    <div class="card-face card-back">
+                        <h3>Answer</h3>
+                        <p><code>top</code> or <code>htop</code></p>
+                        <p style="font-size: 0.9rem; opacity: 0.8;">These tools allow you to see CPU and Memory spikes attributed to the MySQL process ID.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flashcard-nav">
+                <button onclick="prevCard()" class="primary" style="background-color: var(--sidebar-bg); border: 1px solid var(--border-color);">Previous</button>
+                <span id="card-indicator">1 / 3</span>
+                <button onclick="nextCard()" class="primary">Next Card</button>
+            </div>
+
+            <div id="feedback-c" class="feedback info" style="display: block; margin-top: 30px;">
+                <strong>Pro Tip:</strong> Use <code>EXPLAIN</code> before your query to see how MySQL intends to execute it. Look for <code>type: ALL</code> which indicates a full table scan—your primary enemy!
+            </div>
+        </section>
+        <!-- Section: Practice Exam Center -->
+        <section id="exams" class="content-section">
+            <h1>Practice Exam Center</h1>
+            <p>Master the Payment Ecosystem by solving these 25 interactive challenges. Use the built-in terminal to check your work against the schema.</p>
+            
+            <div class="exam-workspace">
+                <div class="exam-terminal-area">
+                    <div class="question-nav">
+                        <button onclick="changeExamQuestion(-1)" class="primary" style="padding: 5px 12px;">&larr;</button>
+                        <span id="exam-q-title" style="font-weight: bold; flex: 1; text-align: center;">Question 1 / 25</span>
+                        <button onclick="changeExamQuestion(1)" class="primary" style="padding: 5px 12px;">&rarr;</button>
+                    </div>
+
+                    <div class="table-card" style="margin: 0; min-height: 80px;">
+                        <p id="exam-q-text" style="margin: 0; font-size: 1.1rem; color: #fff;"></p>
+                    </div>
+
+                    <div class="terminal" style="margin-top: 0;">
+                        <div class="terminal-header">
+                            <span>exam_terminal.sql</span>
+                            <span id="exam-q-category" style="color: var(--accent-color);">Module 0: Basics</span>
+                        </div>
+                        <div class="terminal-body">
+                            <textarea id="exam-sql-input" placeholder="Type your SQL here..."></textarea>
+                        </div>
+                        <div class="controls">
+                            <button class="primary" onclick="checkExamAnswer()">Verify Answer</button>
+                        </div>
+                    </div>
+
+                    <div id="exam-feedback" class="feedback"></div>
+                </div>
+
+                <div class="exam-schema-area">
+                    <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Schema Reference</h3>
+                    <div class="mini-table">
+                        <span class="mini-table-name">transactions</span>
+                        <span class="mini-column">txn_id, sender_id, receiver_id, amount, source_currency, target_currency, status, created_at</span>
+                    </div>
+                    <div class="mini-table">
+                        <span class="mini-table-name">users</span>
+                        <span class="mini-column">user_id, country_code, kyc_status, joined_date</span>
+                    </div>
+                    <div class="mini-table">
+                        <span class="mini-table-name">system_logs</span>
+                        <span class="mini-column">log_id, service_name, error_code, response_time_ms, timestamp</span>
+                    </div>
+                    <p style="font-size: 0.75rem; color: #8b949e; line-height: 1.4;">
+                        <em>Tip:</em> Use standard MySQL syntax. Keywords like SELECT, FROM, JOIN, and WHERE are your main tools.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Answer Key -->
+        <section id="answers" class="content-section">
+            <h1>Answer Key & Study Guide</h1>
+            <p>Use this section to review the correct solutions for the advanced modules and the Practice Exam Center.</p>
+            
+            <div class="table-card" style="margin-bottom: 30px; border-left: 4px solid var(--success-color);">
+                <h2 style="color: #aff5b4;">Practice Exam: Module 0 Solutions</h2>
+                <pre>1. SELECT * FROM users;
+2. SELECT txn_id, amount FROM transactions;
+3. SELECT * FROM users WHERE kyc_status = 'VERIFIED';
+4. SELECT * FROM system_logs WHERE service_name = 'auth-service';
+5. SELECT DISTINCT country_code FROM users;</pre>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px; border-left: 4px solid var(--success-color);">
+                <h2 style="color: #aff5b4;">Practice Exam: Module 1 Solutions</h2>
+                <pre>1. SELECT * FROM transactions WHERE amount BETWEEN 1000 AND 5000;
+2. SELECT * FROM users WHERE joined_date > '2024-01-01';
+3. SELECT * FROM system_logs WHERE error_code LIKE 'API_%';
+4. SELECT * FROM transactions WHERE status IN ('FAILED', 'PENDING');
+5. SELECT * FROM users WHERE country_code IN ('TH', 'SG', 'MY');</pre>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px; border-left: 4px solid var(--success-color);">
+                <h2 style="color: #aff5b4;">Practice Exam: Module 2 Solutions</h2>
+                <pre>1. SELECT COUNT(*) FROM transactions;
+2. SELECT SUM(amount) FROM transactions WHERE status = 'SUCCESS';
+3. SELECT country_code, COUNT(*) FROM users GROUP BY country_code;
+4. SELECT AVG(response_time_ms) FROM system_logs WHERE service_name = 'payment-gateway';
+5. SELECT MAX(amount) FROM transactions;</pre>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px; border-left: 4px solid var(--success-color);">
+                <h2 style="color: #aff5b4;">Practice Exam: Module 3 Solutions</h2>
+                <pre>1. SELECT t.txn_id, u.country_code FROM transactions t JOIN users u ON t.sender_id = u.user_id;
+2. SELECT u.kyc_status FROM transactions t JOIN users u ON t.sender_id = u.user_id WHERE t.txn_id = 'TXN_999';
+3. SELECT t.*, u.joined_date FROM transactions t JOIN users u ON t.sender_id = u.user_id;
+4. SELECT COUNT(*) FROM transactions t JOIN users u ON t.sender_id = u.user_id WHERE u.kyc_status = 'VERIFIED';
+5. SELECT DISTINCT l.service_name FROM system_logs l JOIN transactions t ON l.timestamp = t.created_at WHERE t.status = 'FAILED';</pre>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px; border-left: 4px solid var(--success-color);">
+                <h2 style="color: #aff5b4;">Practice Exam: Module 4 Solutions</h2>
+                <pre>1. SELECT * FROM transactions ORDER BY amount DESC LIMIT 5;
+2. SELECT * FROM users ORDER BY joined_date DESC;
+3. SELECT amount AS usd_value FROM transactions;
+4. SELECT * FROM system_logs ORDER BY response_time_ms DESC LIMIT 3;
+5. SELECT * FROM transactions WHERE status = 'FAILED' ORDER BY created_at ASC LIMIT 10;</pre>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 30px;">
+                <h2 style="color: #aff5b4;">Advanced Module Solutions</h2>
+                <p><strong>Module A (Troubleshooting):</strong></p>
+                <pre>SELECT t.*, u.kyc_status FROM transactions t JOIN users u ON t.sender_id = u.user_id 
+WHERE t.status = 'FAILED' AND u.country_code = 'TH' AND t.created_at >= NOW() - INTERVAL 24 HOUR;</pre>
+                <p><strong>Module B (Optimization):</strong> C. Composite Index on (status, created_at)</p>
+                <p><strong>Module C (CLI Tools):</strong> top, SHOW PROCESSLIST, EXPLAIN.</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Navigation Logic
+        function showSection(id) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(id).classList.add('active');
+            const btn = document.getElementById('btn-' + id);
+            if (btn) btn.classList.add('active');
+
+            if (id === 'exams') {
+                loadExamQuestion();
+            }
+        }
+
+        // Exam Center Logic
+        let currentExamIndex = 0;
+        const examQuestions = [
+            // Module 0
+            { cat: "Module 0: Basics", q: "Write a query to select all columns from the users table.", a: "SELECT * FROM USERS" },
+            { cat: "Module 0: Basics", q: "Select only the txn_id and amount columns from the transactions table.", a: "SELECT TXN_ID, AMOUNT FROM TRANSACTIONS" },
+            { cat: "Module 0: Basics", q: "Find all users who have a kyc_status of 'VERIFIED'.", a: "SELECT * FROM USERS WHERE KYC_STATUS = 'VERIFIED'" },
+            { cat: "Module 0: Basics", q: "Find all records in system_logs where the service_name is 'auth-service'.", a: "SELECT * FROM SYSTEM_LOGS WHERE SERVICE_NAME = 'AUTH-SERVICE'" },
+            { cat: "Module 0: Basics", q: "Select all unique country_code values from the users table.", a: "SELECT DISTINCT COUNTRY_CODE FROM USERS" },
+            // Module 1
+            { cat: "Module 1: Filtering", q: "Find all transactions where the amount is between 1000 and 5000.", a: "SELECT * FROM TRANSACTIONS WHERE AMOUNT BETWEEN 1000 AND 5000" },
+            { cat: "Module 1: Filtering", q: "Select all users who joined the platform after '2024-01-01'.", a: "SELECT * FROM USERS WHERE JOINED_DATE > '2024-01-01'" },
+            { cat: "Module 1: Filtering", q: "Find all logs in system_logs where the error_code starts with 'API_'.", a: "SELECT * FROM SYSTEM_LOGS WHERE ERROR_CODE LIKE 'API_%'" },
+            { cat: "Module 1: Filtering", q: "List all transactions that have a status of 'FAILED' or 'PENDING'.", a: "SELECT * FROM TRANSACTIONS WHERE STATUS IN ('FAILED', 'PENDING')" },
+            { cat: "Module 1: Filtering", q: "Find all users in Thailand ('TH'), Singapore ('SG'), or Malaysia ('MY').", a: "SELECT * FROM USERS WHERE COUNTRY_CODE IN ('TH', 'SG', 'MY')" },
+            // Module 2
+            { cat: "Module 2: Aggregation", q: "What is the total number of transactions recorded?", a: "SELECT COUNT(*) FROM TRANSACTIONS" },
+            { cat: "Module 2: Aggregation", q: "Calculate the total sum of all 'SUCCESS' transaction amounts.", a: "SELECT SUM(AMOUNT) FROM TRANSACTIONS WHERE STATUS = 'SUCCESS'" },
+            { cat: "Module 2: Aggregation", q: "Count how many users are registered for each country_code.", a: "SELECT COUNTRY_CODE, COUNT(*) FROM USERS GROUP BY COUNTRY_CODE" },
+            { cat: "Module 2: Aggregation", q: "Find the average response_time_ms for the 'payment-gateway' service.", a: "SELECT AVG(RESPONSE_TIME_MS) FROM SYSTEM_LOGS WHERE SERVICE_NAME = 'PAYMENT-GATEWAY'" },
+            { cat: "Module 2: Aggregation", q: "Identify the maximum amount ever sent in a single transaction.", a: "SELECT MAX(AMOUNT) FROM TRANSACTIONS" },
+            // Module 3
+            { cat: "Module 3: Joins", q: "Join transactions and users to show txn_id and sender's country_code.", a: "SELECT T.TXN_ID, U.COUNTRY_CODE FROM TRANSACTIONS T JOIN USERS U ON T.SENDER_ID = U.USER_ID" },
+            { cat: "Module 3: Joins", q: "Find the kyc_status of the sender for transaction 'TXN_999'.", a: "SELECT U.KYC_STATUS FROM TRANSACTIONS T JOIN USERS U ON T.SENDER_ID = U.USER_ID WHERE T.TXN_ID = 'TXN_999'" },
+            { cat: "Module 3: Joins", q: "List all transactions along with the joined_date of the sender.", a: "SELECT T.*, U.JOINED_DATE FROM TRANSACTIONS T JOIN USERS U ON T.SENDER_ID = U.USER_ID" },
+            { cat: "Module 3: Joins", q: "Count how many transactions were made by 'VERIFIED' users.", a: "SELECT COUNT(*) FROM TRANSACTIONS T JOIN USERS U ON T.SENDER_ID = U.USER_ID WHERE U.KYC_STATUS = 'VERIFIED'" },
+            { cat: "Module 3: Joins", q: "Join logs and transactions on timestamp/created_at to find service errors for failed txns.", a: "SELECT DISTINCT L.SERVICE_NAME FROM SYSTEM_LOGS L JOIN TRANSACTIONS T ON L.TIMESTAMP = T.CREATED_AT WHERE T.STATUS = 'FAILED'" },
+            // Module 4
+            { cat: "Module 4: Organizational", q: "List the top 5 largest transactions by amount (highest to lowest).", a: "SELECT * FROM TRANSACTIONS ORDER BY AMOUNT DESC LIMIT 5" },
+            { cat: "Module 4: Organizational", q: "Sort all users by joined_date, newest first.", a: "SELECT * FROM USERS ORDER BY JOINED_DATE DESC" },
+            { cat: "Module 4: Organizational", q: "Select transaction amount but rename column to 'usd_value'.", a: "SELECT AMOUNT AS USD_VALUE FROM TRANSACTIONS" },
+            { cat: "Module 4: Organizational", q: "Find the 3 slowest responses in system_logs.", a: "SELECT * FROM SYSTEM_LOGS ORDER BY RESPONSE_TIME_MS DESC LIMIT 3" },
+            { cat: "Module 4: Organizational", q: "List the first 10 'FAILED' transactions ever recorded (oldest first).", a: "SELECT * FROM TRANSACTIONS WHERE STATUS = 'FAILED' ORDER BY CREATED_AT ASC LIMIT 10" }
+        ];
+
+        function loadExamQuestion() {
+            const q = examQuestions[currentExamIndex];
+            document.getElementById('exam-q-title').innerText = `Question ${currentExamIndex + 1} / 25`;
+            document.getElementById('exam-q-text').innerText = q.q;
+            document.getElementById('exam-q-category').innerText = q.cat;
+            document.getElementById('exam-sql-input').value = "";
+            document.getElementById('exam-feedback').style.display = "none";
+        }
+
+        function changeExamQuestion(dir) {
+            currentExamIndex = (currentExamIndex + dir + 25) % 25;
+            loadExamQuestion();
+        }
+
+        function checkExamAnswer() {
+            const input = document.getElementById('exam-sql-input').value.toUpperCase().replace(/\s+/g, ' ').trim();
+            const correct = examQuestions[currentExamIndex].a.toUpperCase();
+            const feedback = document.getElementById('exam-feedback');
+
+            // Simplified validation: check if key keywords and table names match
+            const words = correct.split(' ');
+            const allMatch = words.every(w => input.includes(w));
+
+            if (allMatch) {
+                feedback.className = "feedback success";
+                feedback.innerHTML = "<strong>Correct!</strong> Your query perfectly matches the solution logic.";
+            } else {
+                feedback.className = "feedback info";
+                feedback.innerHTML = `<strong>Not quite.</strong> Check your syntax or keywords.<br><small>Hint: The solution uses ${words.slice(0, 3).join(' ')}...</small>`;
+            }
+            feedback.style.display = "block";
+        }
+
+        // Module A Logic
+        function checkSql() {
+            const input = document.getElementById('sql-input').value.toUpperCase();
+            const feedback = document.getElementById('feedback-a');
+            
+            const hasSelect = input.includes('SELECT');
+            const hasFrom = input.includes('TRANSACTIONS') && input.includes('USERS');
+            const hasJoin = input.includes('JOIN') || (input.includes('FROM TRANSACTIONS, USERS'));
+            const hasWhere = input.includes('FAILED') && input.includes('TH');
+
+            if (hasSelect && hasFrom && hasJoin && hasWhere) {
+                feedback.className = 'feedback success';
+                feedback.innerHTML = `
+                    <strong>Success!</strong> Your query correctly identifies the relationship.
+                    <p><strong>Ideal Query:</strong></p>
+                    <pre>SELECT t.*, u.kyc_status 
+FROM transactions t 
+JOIN users u ON t.sender_id = u.user_id 
+WHERE t.status = 'FAILED' 
+AND u.country_code = 'TH' 
+AND t.created_at >= NOW() - INTERVAL 24 HOUR;</pre>
+                    <p><em>Logic:</em> By joining on sender_id, we filter transactions based on the user's country_code and filter for the FAILED status within the required time window.</p>
+                `;
+            } else {
+                feedback.className = 'feedback info';
+                feedback.innerHTML = `
+                    <strong>Keep trying!</strong> Make sure you:
+                    <ul>
+                        <li>JOIN the <code>transactions</code> and <code>users</code> tables.</li>
+                        <li>Filter by <code>status = 'FAILED'</code>.</li>
+                        <li>Filter by <code>country_code = 'TH'</code>.</li>
+                        <li>Check the <code>created_at</code> timestamp for the last 24 hours.</li>
+                    </ul>
+                `;
+            }
+        }
+
+        // Module B Logic
+        let selectedQuizOption = -1;
+        function selectOption(el, index) {
+            document.querySelectorAll('.quiz-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedQuizOption = index;
+        }
+
+        function checkQuiz() {
+            const feedback = document.getElementById('feedback-b');
+            if (selectedQuizOption === -1) {
+                alert("Please select an option first!");
+                return;
+            }
+
+            if (selectedQuizOption === 2) {
+                feedback.className = 'feedback success';
+                feedback.innerHTML = `
+                    <strong>Correct!</strong> A Composite Index on <code>(status, created_at)</code> is the most efficient choice.
+                    <p><strong>Why?</strong> MySQL can use the index to first narrow down all 'PENDING' rows and then, within those rows, quickly find those after '2023-01-01'.</p>
+                    <p><strong>The B-Tree Advantage:</strong> Instead of checking every row (O(N)), the B-Tree allows MySQL to traverse a sorted tree structure (O(log N)), dramatically reducing disk I/O.</p>
+                `;
+            } else {
+                feedback.className = 'feedback info';
+                feedback.innerHTML = `
+                    <strong>Not quite.</strong> While some of these might help slightly, they aren't the most optimal.
+                    <p>Think about the <code>WHERE</code> clause: we are filtering by two columns. A single index can only satisfy one part of the filter efficiently.</p>
+                `;
+            }
+        }
+
+        // Module C Logic
+        let currentCard = 0;
+        const cards = [
+            {
+                q: "Task 1: System Identification",
+                a: "<code>top</code> or <code>htop</code>",
+                desc: "These tools allow you to see CPU and Memory spikes attributed to the MySQL process ID (mysqld)."
+            },
+            {
+                q: "Task 2: Active Queries",
+                a: "<code>SHOW PROCESSLIST;</code>",
+                desc: "Run this inside MySQL to see all currently running threads and identifying queries that have been running for many seconds."
+            },
+            {
+                q: "Task 3: Deep Analysis",
+                a: "<code>EXPLAIN [query];</code>",
+                desc: "The most powerful command for query debugging. It shows you the execution plan, which indexes are used, and how many rows were scanned."
+            }
+        ];
+
+        function nextCard() {
+            currentCard = (currentCard + 1) % cards.length;
+            updateCard();
+        }
+
+        function prevCard() {
+            currentCard = (currentCard - 1 + cards.length) % cards.length;
+            updateCard();
+        }
+
+        function updateCard() {
+            const flashcard = document.getElementById('flashcard');
+            flashcard.classList.remove('flipped');
+            
+            setTimeout(() => {
+                const front = flashcard.querySelector('.card-face:not(.card-back)');
+                const back = flashcard.querySelector('.card-back');
+                
+                front.querySelector('h3').innerText = cards[currentCard].q.split(':')[0] + ': ' + cards[currentCard].q.split(':')[1];
+                front.querySelector('p').innerText = "Which command or tool should you use for this task?";
+                
+                back.querySelector('p:first-of-type').innerHTML = cards[currentCard].a;
+                back.querySelector('p:last-of-type').innerHTML = cards[currentCard].desc;
+                
+                document.getElementById('card-indicator').innerText = `${currentCard + 1} / ${cards.length}`;
+            }, 300);
+        }
+    </script>
+</body>
+</html>
