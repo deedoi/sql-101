@@ -6,6 +6,12 @@ A fully functional, single-page interactive SQL coaching and examination platfor
 
 **The SQL Foundation Lab** is an interactive learning environment built to bridge the gap between absolute SQL basics and real-world database troubleshooting. Originally designed for professionals preparing for technical support roles in the cross-border payment sector, it uses a mock "Payment Ecosystem" to provide context-rich learning.
 
+## 📸 Screenshots
+
+| SQL Basics Module | Interactive Exam Center |
+| :---: | :---: |
+| ![Basics Module](screenshots/s1.png) | ![Exam Center](screenshots/s2.png) |
+
 ## 🛠 Features
 
 - **Interactive Learning Path**: 5 core modules covering the fundamentals:
