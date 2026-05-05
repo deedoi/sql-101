@@ -345,6 +345,61 @@
             color: #8b949e;
             padding-left: 10px;
         }
+
+        /* Data Tables Styling */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: var(--text-color);
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .data-table th, .data-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: var(--terminal-header);
+            color: var(--accent-color);
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .data-table td code {
+            color: #d2a8ff;
+            background: none;
+            padding: 0;
+            font-family: inherit;
+        }
+
+        .sample-data-container {
+            margin-top: 25px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 15px;
+        }
+
+        .sample-data-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--success-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -374,43 +429,102 @@
             <h1>Payment Ecosystem Schema</h1>
             <p>Welcome, Engineer. Below is the reference schema for our cross-border payment system. Familiarize yourself with these tables as they are the backbone of your troubleshooting tasks.</p>
             
-            <div class="schema-grid">
+            <div class="schema-grid" style="grid-template-columns: 1fr;">
                 <div class="table-card">
                     <span class="table-name">transactions (The "What")</span>
-                    <ul class="column-list">
-                        <li>txn_id (UUID, PK)</li>
-                        <li>sender_id (INT, FK)</li>
-                        <li>receiver_id (INT, FK)</li>
-                        <li>amount (DECIMAL)</li>
-                        <li>source_currency (CHAR 3)</li>
-                        <li>target_currency (CHAR 3)</li>
-                        <li>status (ENUM)</li>
-                        <li>created_at (TIMESTAMP)</li>
-                    </ul>
-                    <p style="font-size: 0.8rem; margin-top: 10px; color: #8b949e;">Stores core payment data. The <strong>status</strong> and <strong>created_at</strong> are your primary filters for troubleshooting.</p>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Column</th><th>Type</th><th>Key</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>txn_id</code></td><td>UUID</td><td>PK</td></tr>
+                            <tr><td><code>sender_id</code></td><td>INT</td><td>FK</td></tr>
+                            <tr><td><code>receiver_id</code></td><td>INT</td><td>FK</td></tr>
+                            <tr><td><code>amount</code></td><td>DECIMAL</td><td></td></tr>
+                            <tr><td><code>source_currency</code></td><td>CHAR(3)</td><td></td></tr>
+                            <tr><td><code>target_currency</code></td><td>CHAR(3)</td><td></td></tr>
+                            <tr><td><code>status</code></td><td>ENUM</td><td></td></tr>
+                            <tr><td><code>created_at</code></td><td>TIMESTAMP</td><td></td></tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="sample-data-container">
+                        <span class="sample-data-title">Example Data Rows</span>
+                        <div style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr><th>txn_id</th><th>sender</th><th>receiver</th><th>amount</th><th>status</th><th>created_at</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>550e8400-e29b-41d4-a716-446655440000</td><td>101</td><td>202</td><td>1500.00</td><td>SUCCESS</td><td>2024-05-01 10:00</td></tr>
+                                    <tr><td>6ba7b810-9dad-11d1-80b4-00c04fd430c8</td><td>103</td><td>205</td><td>50.00</td><td>FAILED</td><td>2024-05-01 11:30</td></tr>
+                                    <tr><td>7c9e6679-7425-40de-944b-e07fc1f90ae7</td><td>101</td><td>206</td><td>200.00</td><td>PENDING</td><td>2024-05-01 12:15</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.8rem; margin-top: 15px; color: #8b949e;">Stores core payment data. The <strong>status</strong> and <strong>created_at</strong> are your primary filters for troubleshooting.</p>
                 </div>
 
                 <div class="table-card">
                     <span class="table-name">users (The "Who")</span>
-                    <ul class="column-list">
-                        <li>user_id (INT, PK)</li>
-                        <li>country_code (CHAR 2)</li>
-                        <li>kyc_status (ENUM)</li>
-                        <li>joined_date (DATE)</li>
-                    </ul>
-                    <p style="font-size: 0.8rem; margin-top: 10px; color: #8b949e;">Master data for platform members. Use <strong>country_code</strong> to investigate regional outages.</p>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Column</th><th>Type</th><th>Key</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>user_id</code></td><td>INT</td><td>PK</td></tr>
+                            <tr><td><code>country_code</code></td><td>CHAR(2)</td><td></td></tr>
+                            <tr><td><code>kyc_status</code></td><td>ENUM</td><td></td></tr>
+                            <tr><td><code>joined_date</code></td><td>DATE</td><td></td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="sample-data-container">
+                        <span class="sample-data-title">Example Data Rows</span>
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>user_id</th><th>country</th><th>kyc_status</th><th>joined_date</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>101</td><td>TH</td><td>VERIFIED</td><td>2023-01-15</td></tr>
+                                <tr><td>102</td><td>SG</td><td>PENDING</td><td>2023-03-22</td></tr>
+                                <tr><td>103</td><td>US</td><td>REJECTED</td><td>2023-11-10</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="font-size: 0.8rem; margin-top: 15px; color: #8b949e;">Master data for platform members. Use <strong>country_code</strong> to investigate regional outages.</p>
                 </div>
 
                 <div class="table-card">
                     <span class="table-name">system_logs (The "Technical Why")</span>
-                    <ul class="column-list">
-                        <li>log_id (BIGINT, PK)</li>
-                        <li>service_name (VARCHAR)</li>
-                        <li>error_code (VARCHAR)</li>
-                        <li>response_time_ms (INT)</li>
-                        <li>timestamp (TIMESTAMP)</li>
-                    </ul>
-                    <p style="font-size: 0.8rem; margin-top: 10px; color: #8b949e;">Infrastructure health data. Use <strong>response_time_ms</strong> to find "lag" and <strong>error_code</strong> to see why a txn failed.</p>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Column</th><th>Type</th><th>Key</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>log_id</code></td><td>BIGINT</td><td>PK</td></tr>
+                            <tr><td><code>service_name</code></td><td>VARCHAR</td><td></td></tr>
+                            <tr><td><code>error_code</code></td><td>VARCHAR</td><td></td></tr>
+                            <tr><td><code>response_time_ms</code></td><td>INT</td><td></td></tr>
+                            <tr><td><code>timestamp</code></td><td>TIMESTAMP</td><td></td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="sample-data-container">
+                        <span class="sample-data-title">Example Data Rows</span>
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>log_id</th><th>service_name</th><th>error_code</th><th>latency</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>10001</td><td>payment-gateway</td><td>NULL</td><td>120ms</td></tr>
+                                <tr><td>10002</td><td>auth-service</td><td>ERR_TIMEOUT</td><td>5000ms</td></tr>
+                                <tr><td>10003</td><td>ledger-api</td><td>NULL</td><td>45ms</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="font-size: 0.8rem; margin-top: 15px; color: #8b949e;">Infrastructure health data. Use <strong>response_time_ms</strong> to find "lag" and <strong>error_code</strong> to see why a txn failed.</p>
                 </div>
             </div>
 
